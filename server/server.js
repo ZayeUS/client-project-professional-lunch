@@ -5,7 +5,7 @@ require('dotenv').config();
 const PORT = process.env.PORT || 5001;
 
 const corsOptions = {
-  origin: 'http://localhost:5173', // Frontend URL
+  origin: 'http://localhost:5173,https://client-project-professional-lunch.fly.dev/', // Frontend URL
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 };
