@@ -206,4 +206,38 @@ router.post("/logout", (req, res, next) => {
   });
 });
 
+// POST route to set isActive to false
+router.post("/deactivate", async (req, res) => {
+  try {
+    const userId = req.body.userId; // Get the user ID from the request body
+    if (!userId) {
+      return res.status(400).send("User ID is required.");
+    }
+
+    const queryText = `UPDATE "user" SET "isActive" = FALSE WHERE "id" = $1;`;
+    await pool.query(queryText, [userId]);
+    res.sendStatus(200); // Success response
+  } catch (error) {
+    console.error("Error in deactivating user:", error);
+    res.sendStatus(500); // Internal server error
+  }
+});
+
+// POST route to set isActive to true (Activate)
+router.post("/activate", async (req, res) => {
+  try {
+    const userId = req.body.userId; // Get the user ID from the request body
+    if (!userId) {
+      return res.status(400).send("User ID is required.");
+    }
+
+    const queryText = `UPDATE "user" SET "isActive" = TRUE WHERE "id" = $1;`;
+    await pool.query(queryText, [userId]);
+    res.sendStatus(200); // Success response
+  } catch (error) {
+    console.error("Error in activating user:", error);
+    res.sendStatus(500); // Internal server error
+  }
+});
+
 module.exports = router;

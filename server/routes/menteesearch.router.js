@@ -20,7 +20,8 @@ mentor_profiles AS (
     FROM profiles p
     JOIN profiles_interests pi ON p.id = pi.profile_id
     JOIN interests i ON pi.interest_id = i.id
-    WHERE p."isMentor" = true
+    JOIN "user" u ON u.id = p.user_id  -- Join with the user table to access isActive
+    WHERE p."isMentor" = true AND u."isActive" = true  -- Only active mentors
 )
 SELECT DISTINCT ON (mp.id) mp.*
 FROM mentor_profiles mp
@@ -40,7 +41,8 @@ router.get('/gender/:id', rejectUnauthenticated, async (req, res) => {
   console.log(`Get mentors based on gender`);
   const queryText = `SELECT p.*
                       FROM profiles p
-                      WHERE p."isMentor" = TRUE AND p.gender = $1; `;
+                      JOIN "user" u ON u.id = p.user_id  -- Join with the user table to access isActive
+                      WHERE p."isMentor" = TRUE AND p.gender = $1 AND u."isActive" = true;`; 
   try {
     const result = await pool.query(queryText, [req.params.id]);
     res.send(result.rows);
@@ -49,5 +51,6 @@ router.get('/gender/:id', rejectUnauthenticated, async (req, res) => {
     res.sendStatus(500);
   }
 });
+
 
 module.exports = router;

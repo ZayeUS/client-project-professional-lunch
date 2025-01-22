@@ -11,33 +11,6 @@ CREATE TABLE "user" (
     "isMentor" boolean DEFAULT false
 );
 
-CREATE TABLE profiles (
-    id SERIAL PRIMARY KEY,
-    user_id integer REFERENCES "user"(id) ON DELETE CASCADE,
-    "isMentor" boolean DEFAULT false,
-    avatar character varying,
-    first_name character varying(100) NOT NULL,
-    last_name character varying(100) NOT NULL,
-    email character varying NOT NULL,
-    gender integer NOT NULL REFERENCES genders(id),
-    school integer REFERENCES schools(id),
-    bio character varying,
-    linkedin character varying,
-    calendar_link character varying
-);
-
-CREATE TABLE IF NOT EXISTS "profiles_availability" (
-	"id" SERIAL PRIMARY KEY,
-	"profile_id" INT REFERENCES "profiles",
-	"availability_id" INT REFERENCES "availability"
-);
-
-CREATE TABLE IF NOT EXISTS "profiles_interests" (
-	"id" SERIAL PRIMARY KEY,
-	"profile_id" INT REFERENCES "profiles" ON DELETE CASCADE,
-	"interest_id" INT REFERENCES "interests"
-);
-
 CREATE TABLE IF NOT EXISTS "interests" (
 	"id" SERIAL PRIMARY KEY,
 	"interest" VARCHAR NOT NULL
@@ -53,13 +26,6 @@ CREATE TABLE IF NOT EXISTS "schools" (
 	"school" VARCHAR NOT NULL
 );
 
-CREATE TABLE availability (
-    id SERIAL PRIMARY KEY,
-    profile_id integer REFERENCES profiles(id) ON DELETE CASCADE,
-    day integer REFERENCES days(id),
-    time integer REFERENCES times(id)
-);
-
 CREATE TABLE IF NOT EXISTS "days" (
 	"id" SERIAL PRIMARY KEY,
 	"day" VARCHAR NOT NULL
@@ -69,6 +35,33 @@ CREATE TABLE IF NOT EXISTS "times" (
 	"id" SERIAL PRIMARY KEY,
 	"time" VARCHAR NOT NULL
 );
+
+CREATE TABLE profiles (
+    id SERIAL PRIMARY KEY,
+    user_id integer REFERENCES "user"(id) ON DELETE CASCADE,
+    "isMentor" boolean DEFAULT false,
+    avatar character varying,
+    first_name character varying(100) NOT NULL,
+    last_name character varying(100) NOT NULL,
+    email character varying NOT NULL,
+    gender integer NOT NULL REFERENCES genders(id),
+    school integer REFERENCES schools(id),
+    bio character varying,
+    linkedin character varying,
+    calendar_link character varying
+);
+
+
+
+
+CREATE TABLE availability (
+    id SERIAL PRIMARY KEY,
+    profile_id integer REFERENCES profiles(id) ON DELETE CASCADE,
+    day integer REFERENCES days(id),
+    time integer REFERENCES times(id)
+);
+
+
 
 CREATE TABLE mentorships (
     id SERIAL PRIMARY KEY,
@@ -102,6 +95,20 @@ CREATE TABLE IF NOT EXISTS "resources" (
   "notes" VARCHAR (500)
 );
 
+
+CREATE TABLE IF NOT EXISTS "profiles_availability" (
+	"id" SERIAL PRIMARY KEY,
+	"profile_id" INT REFERENCES "profiles",
+	"availability_id" INT REFERENCES "availability"
+);
+
+CREATE TABLE IF NOT EXISTS "profiles_interests" (
+	"id" SERIAL PRIMARY KEY,
+	"profile_id" INT REFERENCES "profiles" ON DELETE CASCADE,
+	"interest_id" INT REFERENCES "interests"
+);
+
+
 INSERT INTO "interests" ("interest")
 VALUES
 ('Business and Entreprenuership'),
@@ -126,23 +133,10 @@ INSERT INTO "genders" ("gender")
 VALUES
 ('Male'),
 ('Female'),
-('Non-Binary'),
-('Prefer not to say'),
 ('Other');
 
 INSERT INTO "schools" ("school")
 VALUES
-('Fargo Davies'),
-('Fargo North'),
-('Fargo Shanley'),
-('Fargo South'),
-('Horace High'),
-('Moorhead High'),
-('Northern Cass'),
-('Oak Grove'),
-('Park Christian'),
-('West Fargo High'),
-('West Fargo Sheyenne'),
 ('Concordia'),
 ('MSCTC'),
 ('MSUM'),

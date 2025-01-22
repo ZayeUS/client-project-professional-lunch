@@ -65,42 +65,7 @@ export default function MentorsByGender() {
             <FemaleMentors />
           </AccordionDetails>
         </Accordion>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ArrowDropDownIcon />}
-            aria-controls='panel2-content'
-            id='panel2-header'
-          >
-            <Typography>Non-Binary</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <NonBinaryMentors />
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ArrowDropDownIcon />}
-            aria-controls='panel2-content'
-            id='panel2-header'
-          >
-            <Typography>Prefer not to say</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <NotSayMentors />
-          </AccordionDetails>
-        </Accordion>
-        <Accordion>
-          <AccordionSummary
-            expandIcon={<ArrowDropDownIcon />}
-            aria-controls='panel2-content'
-            id='panel2-header'
-          >
-            <Typography>Other Gender</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <OtherMentors />
-          </AccordionDetails>
-        </Accordion>
+      
       </div>
     </div>
   );

@@ -1,7 +1,5 @@
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState, useEffect } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Stack, Typography } from '@mui/joy';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -20,20 +18,20 @@ import OtherMentors from './OtherMentors';
 export default function MentorAccordions() {
   const dispatch = useDispatch();
   const profiles = useSelector((store) => store.profiles);
-  console.log('Profiles:', profiles);
-  const mentors = profiles.filter((profile) => profile.isMentor);
-  console.log('Mentors', mentors);
   const user = useSelector((store) => store.user);
-  console.log('User', user);
+
+  // Ensure profiles are loaded
+  if (!profiles || profiles.length === 0) {
+    return <Typography>Loading profiles...</Typography>;
+  }
+
+  // Filter mentors and available mentors
+  const mentors = profiles.filter((profile) => profile.isMentor);
   const availableMentors = mentors.filter(
     (mentor) => !user.mentorships.includes(mentor.id)
   );
-  console.log('Available Mentors', availableMentors);
 
-  useEffect(() => {
-    dispatch({ type: 'FETCH_PROFILES' });
-  }, []);
-
+  // Pagination logic
   const mentorsPerPage = 3;
   const [currentIndex, setCurrentIndex] = useState(0);
   const currentMentors = availableMentors.slice(
@@ -43,31 +41,52 @@ export default function MentorAccordions() {
 
   const nextMentors = () => {
     if (currentIndex + mentorsPerPage >= availableMentors.length) {
-      setCurrentIndex(0);
+      setCurrentIndex(0); // Loop back to the first page
     } else {
       setCurrentIndex(currentIndex + mentorsPerPage);
     }
   };
 
   const previousMentors = () => {
-    if (currentIndex + mentorsPerPage >= availableMentors.length) {
-      setCurrentIndex(0);
+    if (currentIndex === 0) {
+      setCurrentIndex(availableMentors.length - mentorsPerPage); // Go to the last page
     } else {
-      if (currentIndex === 0) {
-        return;
-      } else {
-        setCurrentIndex(currentIndex - mentorsPerPage);
-      }
+      setCurrentIndex(currentIndex - mentorsPerPage);
     }
   };
 
+  useEffect(() => {
+    dispatch({ type: 'FETCH_PROFILES' });
+  }, [dispatch]);
+
+  const categories = [
+    { label: 'All Mentors', component: <Stack>{currentMentors.map((mentor) => <MentorItem key={mentor.id} mentor={mentor} />)}</Stack> },
+    { label: 'Male Mentors', component: <MaleMentors /> },
+    { label: 'Female Mentors', component: <FemaleMentors /> }
+  ];
+
   return (
     <>
+      {categories.map((category, index) => (
+        <Accordion key={index}>
+          <AccordionSummary
+            expandIcon={<ArrowDropDownIcon />}
+            aria-controls={`panel${index}-content`}
+            id={`panel${index}-header`}
+          >
+            <Typography>{category.label}</Typography>
+          </AccordionSummary>
+          <AccordionDetails>
+            {category.component}
+          </AccordionDetails>
+        </Accordion>
+      ))}
+
       <Accordion>
         <AccordionSummary
           expandIcon={<ArrowDropDownIcon />}
-          aria-controls='panel1-content'
-          id='panel1-header'
+          aria-controls="panel0-content"
+          id="panel0-header"
         >
           <Typography>All Mentors</Typography>
         </AccordionSummary>
@@ -78,80 +97,15 @@ export default function MentorAccordions() {
             ))}
           </Stack>
         </AccordionDetails>
-        <Stack
-        direction='row'
-        justifyContent='space-between'
-        sx={{ margin: '6px' }}
-      >
-        <IconButton onClick={previousMentors}>
-          <ArrowBackIosNewIcon />
-        </IconButton>
-        <IconButton onClick={nextMentors}>
-          <ArrowForwardIosIcon />
-        </IconButton>
-      </Stack>
+        <Stack direction="row" justifyContent="space-between" sx={{ margin: '6px' }}>
+          <IconButton onClick={previousMentors} disabled={currentIndex === 0}>
+            <ArrowBackIosNewIcon />
+          </IconButton>
+          <IconButton onClick={nextMentors}>
+            <ArrowForwardIosIcon />
+          </IconButton>
+        </Stack>
       </Accordion>
-      
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ArrowDropDownIcon />}
-          aria-controls='panel1-content'
-          id='panel1-header'
-        >
-          <Typography>Male Mentors</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <MaleMentors />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ArrowDropDownIcon />}
-          aria-controls='panel1-content'
-          id='panel1-header'
-        >
-          <Typography>Female Mentors</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <FemaleMentors />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ArrowDropDownIcon />}
-          aria-controls='panel1-content'
-          id='panel1-header'
-        >
-          <Typography>Non-Binary Mentors</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <NonBinaryMentors />
-        </AccordionDetails>
-      </Accordion>
-      {/* <Accordion>
-        <AccordionSummary
-          expandIcon={<ArrowDropDownIcon />}
-          aria-controls='panel1-content'
-          id='panel1-header'
-        >
-          <Typography>Mentors that prefer not to say gender</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <NotSayMentors />
-        </AccordionDetails>
-      </Accordion>
-      <Accordion>
-        <AccordionSummary
-          expandIcon={<ArrowDropDownIcon />}
-          aria-controls='panel1-content'
-          id='panel1-header'
-        >
-          <Typography>Mentors of other gender</Typography>
-        </AccordionSummary>
-        <AccordionDetails>
-          <OtherMentors />
-        </AccordionDetails>
-      </Accordion> */}
     </>
   );
 }

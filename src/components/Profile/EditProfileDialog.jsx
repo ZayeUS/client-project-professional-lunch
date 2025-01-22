@@ -11,12 +11,13 @@ import DialogTitle from '@mui/material/DialogTitle';
 import FormControl from '@mui/joy/FormControl';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { TextField, Autocomplete } from '@mui/material';
+import { TextField, Autocomplete, Checkbox, FormControlLabel } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import Tooltip from '@mui/joy/Tooltip';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd';
 import { useScript } from '../../hooks/useScript';
+import axios from 'axios';
 
 export default function EditProfileDialog({ open, closeEditProfile, profile }) {
   const dispatch = useDispatch();
@@ -38,11 +39,11 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
     profile: {},
     details: { availability: profileAvailability },
   });
-  console.log('Profile', profile, editProfile);
+  const [isDeactivated, setIsDeactivated] = useState(profile?.profile?.isActive === false);  // Set initial value based on isActive status
 
   useEffect(() => {
     setEditProfile(profile);
-  }, [profile]); // when profile in redux has finished loading, load into local state so we can edit it
+  }, [profile]);
 
   useEffect(() => {
     dispatch({ type: 'FETCH_PROFILE_DETAILS' });
@@ -55,9 +56,17 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log('clicked');
-    console.log('editProfile', editProfile);
-    dispatch({ type: 'EDIT_PROFILE', payload: editProfile });
+
+    // Include the 'isActive' status in the profile update payload
+    const updatedProfile = {
+      ...editProfile,
+      isActive: !isDeactivated,  // Set the isActive value based on the checkbox state
+    };
+
+    // Dispatch the action to update the profile, including the 'isActive' status
+    dispatch({ type: 'EDIT_PROFILE', payload: updatedProfile });
+
+    // Close the edit profile dialog
     closeEditProfile();
   };
 
@@ -79,8 +88,6 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
   };
 
   const handleInterestsChange = (event, newValue) => {
-    console.log('The New Value', newValue);
-    console.log('interests', interests);
     if (newValue.length <= 5) {
       setInterests(newValue);
       setEditProfile({
@@ -96,7 +103,6 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
   const handleDayChange = (index, newValueId, newValueObj) => {
     let copyAvail = [...availability];
     let updateCopyList = copyAvail.map((k) => {
-      console.log('item to change...', k);
       if (k.availability_id === newValueObj?.availability_id) {
         let copyK = { ...k };
         copyK.day_id = Number(newValueId);
@@ -118,7 +124,6 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
   const handleTimeChange = (index, newValueId, newValueObj) => {
     let copyAvail = [...availability];
     let updateCopyList = copyAvail.map((k) => {
-      console.log('item to change...', k);
       if (k.availability_id === newValueObj?.availability_id) {
         let copyK = { ...k };
         copyK.time_id = Number(newValueId);
@@ -161,6 +166,32 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
         .open();
   };
 
+  const handleDeactivateChange = async (event) => {
+    const checked = event.target.checked;
+    setIsDeactivated(checked); // Update the local state based on the checkbox
+
+    const userId = user.id;
+    const payload = { userId };
+
+    if (checked) {
+      try {
+        await axios.post('http://localhost:5001/api/user/deactivate', payload); // Send user id for deactivation
+        
+      } catch (error) {
+        console.error('Error deactivating account:', error);
+       
+      }
+    } else {
+      try {
+        await axios.post('http://localhost:5001/api/user/activate', payload); // Send user id for activation
+       
+      } catch (error) {
+        console.error('Error activating account:', error);
+      
+      }
+    }
+  };
+
   return (
     <>
       <Dialog
@@ -171,15 +202,15 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
         <DialogTitle>Edit Profile</DialogTitle>
         <DialogContent>
           <Stack
-            direction='column'
-            justifyContent='space-evenly'
-            alignItems='center'
+            direction="column"
+            justifyContent="space-evenly"
+            alignItems="center"
             spacing={3}
           >
             <Badge
               onClick={openWidget}
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-              variant='outlined'
+              variant="outlined"
               badgeContent={
                 <CameraAltIcon
                   sx={{
@@ -190,11 +221,11 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
                   }}
                 />
               }
-              badgeInset='14%'
+              badgeInset="14%"
               sx={{ '--Badge-paddingX': '0px' }}
             >
               <Avatar
-                variant='outlined'
+                variant="outlined"
                 sx={{ width: 125, height: 125 }}
                 src={editProfile?.profile.avatar}
               />
@@ -204,16 +235,16 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
           <InputLabel>About Me</InputLabel>
           <TextField
             sx={{ mb: 1 }}
-            placeholder='Bio'
-            type='text'
-            id='bio'
+            placeholder="Bio"
+            type="text"
+            id="bio"
             fullWidth
             multiline
             minRows={2}
-            size='small'
-            margin='dense'
+            size="small"
+            margin="dense"
             value={editProfile?.profile?.bio}
-            className='form-control'
+            className="form-control"
             onChange={(event) =>
               setEditProfile({
                 ...editProfile,
@@ -224,14 +255,14 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
           <InputLabel>Email</InputLabel>
           <TextField
             sx={{ mb: 1 }}
-            placeholder='Email'
-            type='text'
-            id='email'
-            name='email'
+            placeholder="Email"
+            type="text"
+            id="email"
+            name="email"
             fullWidth
-            className='form-control'
-            size='small'
-            margin='dense'
+            className="form-control"
+            size="small"
+            margin="dense"
             value={editProfile?.profile?.email}
             onChange={(event) =>
               setEditProfile({
@@ -246,13 +277,13 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
           <InputLabel>LinkedIn</InputLabel>
           <TextField
             sx={{ mb: 1 }}
-            placeholder='LinkedIn'
-            className='form-control'
-            type='text'
-            id='linkedin'
+            placeholder="LinkedIn"
+            className="form-control"
+            type="text"
+            id="linkedin"
             fullWidth
-            size='small'
-            margin='dense'
+            size="small"
+            margin="dense"
             value={editProfile?.profile?.linkedin}
             onChange={(e) =>
               setEditProfile({
@@ -268,8 +299,8 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
           <Select
             sx={{ mb: 1 }}
             fullWidth
-            size='small'
-            margin='dense'
+            size="small"
+            margin="dense"
             value={editProfile?.profile.gender}
             onChange={(event) =>
               setEditProfile({
@@ -294,8 +325,8 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
               <InputLabel>School</InputLabel>
               <Select
                 sx={{ mb: 1 }}
-                size='small'
-                margin='dense'
+                size="small"
+                margin="dense"
                 value={editProfile?.profile.school}
                 onChange={(event) =>
                   setEditProfile({
@@ -327,17 +358,17 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
             renderInput={(params) => (
               <TextField
                 {...params}
-                variant='outlined'
-                label='Add Up To 5 Interests'
-                placeholder='Interests...'
+                variant="outlined"
+                label="Add Up To 5 Interests"
+                placeholder="Interests..."
               />
             )}
           />
           <div>
-            <Stack sx={{ mb: 0.5 }} direction='row' spacing={2}>
+            <Stack sx={{ mb: 0.5 }} direction="row" spacing={2}>
               <InputLabel>Availability</InputLabel>
               <Stack>
-                <Tooltip title='Add Availability' variant='soft'>
+                <Tooltip title="Add Availability" variant="soft">
                   <PlaylistAddIcon
                     sx={{ fontSize: '25px', cursor: 'pointer' }}
                     onClick={handleAdd}
@@ -348,20 +379,16 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
             {availability?.map((availabilityItem, index) => (
               <Stack
                 key={index}
-                direction='row'
-                alignItems='center'
-                justifyContent='space-between'
+                direction="row"
+                alignItems="center"
+                justifyContent="space-between"
                 spacing={1}
               >
-                <Stack flexGrow={1} spacing={1} direction='row'>
+                <Stack flexGrow={1} spacing={1} direction="row">
                   <Select
                     value={availabilityItem?.day_id}
                     onChange={(event) =>
-                      handleDayChange(
-                        index,
-                        event.target.value,
-                        availabilityItem
-                      )
+                      handleDayChange(index, event.target.value, availabilityItem)
                     }
                     sx={{ flex: 1 }}
                   >
@@ -374,11 +401,7 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
                   <Select
                     value={availabilityItem?.time_id}
                     onChange={(event) =>
-                      handleTimeChange(
-                        index,
-                        event.target.value,
-                        availabilityItem
-                      )
+                      handleTimeChange(index, event.target.value, availabilityItem)
                     }
                     sx={{ flex: 1 }}
                   >
@@ -390,28 +413,39 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
                   </Select>
                 </Stack>
                 <Stack>
-                  <Tooltip title='Delete Availability' variant='soft'>
+                  <Tooltip title="Delete Availability" variant="soft">
                     <DeleteForeverIcon
                       sx={{ fontSize: '30px', cursor: 'pointer' }}
                       onClick={() => handleRemove(index)}
                     />
                   </Tooltip>
                 </Stack>
-                {/* <Button onClick={() => handleRemove(index)}>-</Button> */}
               </Stack>
             ))}
           </div>
+
+          {/* Deactivate Account Checkbox */}
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={isDeactivated}
+                onChange={handleDeactivateChange}
+                color="secondary"
+              />
+            }
+            label="Deactivate Account"
+          />
         </DialogContent>
         <DialogActions>
           <Button
-            color='neutral'
-            variant='outlined'
-            type='button'
+            color="neutral"
+            variant="outlined"
+            type="button"
             onClick={() => closeEditProfile()}
           >
             Cancel
           </Button>
-          <Button type='submit' color='primary' variant='outlined'>
+          <Button type="submit" color="primary" variant="outlined">
             Submit
           </Button>
         </DialogActions>

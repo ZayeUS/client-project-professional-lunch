@@ -1,7 +1,15 @@
+const cors = require('cors');
 const express = require('express');
 const app = express();
 require('dotenv').config();
 const PORT = process.env.PORT || 5001;
+
+const corsOptions = {
+  origin: 'http://localhost:5173', // Frontend URL
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+};
+app.use(cors(corsOptions));
 
 // Middleware Includes
 const sessionMiddleware = require('./modules/session-middleware');
@@ -21,7 +29,7 @@ const adminProfilesRouter = require('./routes/adminprofiles.router');
 const menteeSearchRouter = require('./routes/menteesearch.router');
 const profileAvailabilityRouter = require("./routes/profile.availability.router");
 const profileCheckRouter = require("./routes/profile.check.router");
-
+const zoomRouter = require('./routes/zoom.router'); // Import the Zoom router
 
 // Express Middleware
 app.use(express.json());
@@ -36,7 +44,6 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-
 app.use('/api/user', userRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/resources', resourcesRouter);
@@ -50,6 +57,7 @@ app.use('/api/adminprofiles', adminProfilesRouter);
 app.use('/api/menteesearch', menteeSearchRouter);
 app.use("/api/profileavailability", profileAvailabilityRouter);
 app.use("/api/check", profileCheckRouter);
+app.use("/api/zoom", zoomRouter);  // Register the Zoom router
 
 // Listen Server & Port
 app.listen(PORT, () => {

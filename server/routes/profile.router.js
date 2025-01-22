@@ -20,10 +20,17 @@ router.get("/", (req, res) => {
 });
 
 // GET profile information for logged in user
+// GET profile information for logged in user
 router.get("/my-details", async (req, res) => {
   try {
-    const queryText = `SELECT * FROM "profiles" WHERE "user_id"=$1`;
+    // Fetch the profile details and isActive status
+// Correct the reference to the "isActive" column
+const queryText = `SELECT p.*, u."isActive" FROM "profiles" p
+                   JOIN "user" u ON u.id = p.user_id
+                   WHERE p."user_id" = $1`;
+
     const result = await pool.query(queryText, [req.user.id]);
+    
     const queryText2 = `WITH interests_cte AS (
       SELECT
         profiles.user_id,
@@ -75,7 +82,10 @@ router.get("/my-details", async (req, res) => {
       availability_cte ON profiles.user_id = availability_cte.user_id
     WHERE
       "user".id = $1;`;
+    
     const result2 = await pool.query(queryText2, [req.user.id]);
+    
+    // Return the profile and details along with isActive status
     const response = {
       profile: result.rows[0],
       details: result2.rows[0],
@@ -86,6 +96,7 @@ router.get("/my-details", async (req, res) => {
     res.sendStatus(500);
   }
 });
+
 
 // GET profile information for specific user
 router.get("/:id", async (req, res) => {
@@ -218,11 +229,15 @@ router.post("/", async (req, res) => {
 });
 
 // PUT edit profile
+// PUT edit profile
 router.put("/", rejectUnauthenticated, async (req, res) => {
   try {
-    const queryText = `UPDATE "profiles" SET "avatar"=$1, "bio"=$2, "linkedin"=$3, "email"=$4, "gender"=$5,
-                        "school"=$6 
+    // Query to update profile details including isActive status
+    const queryText = `UPDATE "profiles" 
+                        SET "avatar"=$1, "bio"=$2, "linkedin"=$3, "email"=$4, "gender"=$5, 
+                            "school"=$6
                         WHERE "profiles"."user_id"=$7;`;
+
     await pool.query(queryText, [
       req.body.profile.avatar,
       req.body.profile.bio,
@@ -233,17 +248,29 @@ router.put("/", rejectUnauthenticated, async (req, res) => {
       req.user.id,
     ]);
 
+    // Now update the user table to include the 'isActive' status
+    const queryText2 = `UPDATE "user" 
+                        SET "isActive"=$1 
+                        WHERE "user".id=$2;`;
+
+    await pool.query(queryText2, [
+      req.body.isActive, // Ensure that 'isActive' is passed in the request body
+      req.user.id,
+    ]);
+
+    // Update the interests and availability
     const interests = req.body.details.interests;
-    console.log("interests:", req.body.details.availability);
     await pool.query(`DELETE from profiles_interests WHERE profile_id=$1;`, [
       req.body.profile.id,
     ]);
-    for (interest of interests) {
+    for (let interest of interests) {
       await pool.query(
         `INSERT INTO profiles_interests (profile_id, interest_id) VALUES ($1, $2)`,
         [req.body.profile.id, interest.id]
       );
     }
+
+    // Deleting and adding new availability records
     await pool.query(`DELETE FROM profiles_availability WHERE profile_id=$1`, [
       req.body.profile.id,
     ]);
@@ -252,26 +279,24 @@ router.put("/", rejectUnauthenticated, async (req, res) => {
     ]);
 
     const availabilities = req.body.details.availability;
-    console.log("availabilities:", availabilities);
     for (const availability of availabilities) {
       const result = await pool.query(
         `INSERT INTO availability (profile_id, day, time) VALUES ($1, $2, $3)
-    RETURNING id;`,
+        RETURNING id;`,
         [req.body.profile.id, availability.day_id, availability.time_id]
       );
 
       const availabilityID = result.rows[0].id;
-
       await pool.query(
         `INSERT INTO profiles_availability (profile_id, availability_id) VALUES ($1, $2);`,
         [req.body.profile.id, availabilityID]
       );
     }
 
-    res.sendStatus(200);
+    res.sendStatus(200); // Success response
   } catch (error) {
     console.log("Error in updating profile", error);
-    res.sendStatus(500);
+    res.sendStatus(500); // Internal server error
   }
 });
 

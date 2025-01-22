@@ -42,9 +42,9 @@ export default function Profile() {
     window.scrollTo(0, 0);
   }, []);
 
-  // note: if user does not have a profile yet, will this prevent them from editing their empty profile?
+  // Check if profile is still loading
   if (!profile.profile) {
-    return <h2>Loading...</h2>;
+    return <h2>Loading...</h2>; // Display loading state while fetching profile
   }
 
   return (

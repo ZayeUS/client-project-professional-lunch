@@ -92,7 +92,7 @@ export default function RegisterForm4() {
           avatar: avatar,
         },
       });
-      history.push('/profile');
+      history.push('/resources');
     } else {
       alert('Please select both a day and a time for all availabilities.');
     }
@@ -104,7 +104,7 @@ export default function RegisterForm4() {
         last_name: regInfo.lastName,
         email: regInfo.email,
         gender: Number(regInfo.gender),
-        school: user.isMentor ? 16 : Number(regInfo.school),
+        school: user.isMentor ? 8 : Number(regInfo.school),
         avatar: avatar,
         bio: regInfo.bio,
         linkedin: regInfo.linkedin,
