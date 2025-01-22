@@ -23,4 +23,3 @@ coverage
 **/yarn-error.log*
 
 **/.eslintcache
-fly.toml
