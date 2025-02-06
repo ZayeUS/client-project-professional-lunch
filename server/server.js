@@ -44,6 +44,10 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
+
+app.get('/', (req, res) => {
+  res.send('Welcome to the backend!');
+});
 app.use('/api/user', userRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/resources', resourcesRouter);
