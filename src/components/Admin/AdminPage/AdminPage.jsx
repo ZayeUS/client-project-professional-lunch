@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import { useDispatch, useSelector } from 'react-redux';
 import MentorList from '../Mentors/MentorList/MentorList';
 import MenteeList from '../Mentees/MenteeList/MenteeList';
 import MentorshipList from '../Mentorships/MentorshipList/MentorshipList';
@@ -13,6 +12,7 @@ import SchoolsList from '../Schools/SchoolsList/SchoolsList';
 import GendersList from '../Genders/GendersList/GendersList';
 import { Button, Stack, Typography } from '@mui/joy';
 import { Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import axios from 'axios';
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -45,24 +45,43 @@ function a11yProps(index) {
 export default function AdminPage() {
   const [value, setValue] = useState(0);
   const [openModal, setOpenModal] = useState(false);
-  const dispatch = useDispatch();
-
-  // Access pendingMentors safely with a default empty array if it's undefined
-  const pendingMentors = useSelector((store) => store.pendingMentors?.pendingMentors || []);
+  const [pendingMentors, setPendingMentors] = useState([]);
 
   useEffect(() => {
     if (value === 1) { // When the Mentor Approvals tab is clicked
-      dispatch({ type: 'FETCH_PENDING_MENTORS' }); // Dispatch action to fetch only pending mentors
+      fetchPendingMentors(); // Fetch pending mentors using API
     }
-  }, [dispatch, value]); // Depend on value to trigger when the tab is selected
+  }, [value]);
+
+  const fetchPendingMentors = async () => {
+    try {
+      const response = await axios.get('https://client-project-professional-lunch.fly.dev/api/pendingmentors/pending'); // API endpoint to get pending mentors
+      if (response.status === 200) {
+        setPendingMentors(response.data); // Set the list of pending mentors
+      } else {
+        console.error('Failed to fetch pending mentors');
+      }
+    } catch (error) {
+      console.error('Error fetching pending mentors:', error);
+    }
+  };
+
+  const handleApproveMentor = async (mentorId) => {
+    try {
+      const response = await axios.put(`https://client-project-professional-lunch.fly.dev/api/pendingmentors/${mentorId}/approve`);
+      if (response.status === 200) {
+        setOpenModal(true); // Show confirmation modal
+        fetchPendingMentors(); // Refresh the list of pending mentors
+      } else {
+        console.error('Failed to approve mentor');
+      }
+    } catch (error) {
+      console.error('Error approving mentor:', error);
+    }
+  };
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
-  };
-
-  const handleApproveMentor = (mentorId) => {
-    dispatch({ type: 'APPROVE_MENTOR', payload: { mentorId } });
-    setOpenModal(true); // Show confirmation modal
   };
 
   return (

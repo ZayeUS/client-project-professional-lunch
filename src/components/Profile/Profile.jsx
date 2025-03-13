@@ -28,13 +28,14 @@ export default function Profile() {
     window.scrollTo(0, 0);
   }, []);
 
-  // Check if profile is still loading
+  // Check if profile is still loading or doesn't exist
   if (!profile.profile) {
-    return <h2>Loading...</h2>; // Display loading state while fetching profile
+    return (
+      <div className="container">
+        <h2>Create a profile</h2> {/* Display a message prompting the user to create a profile */}
+      </div>
+    );
   }
-
-  // Hardcoded Calendly URL
-  const calendlyUrl = "https://calendly.com/ujj-code/30-min-meeting-w-ujjwal";
 
   return (
     <div className='container'>
@@ -69,15 +70,17 @@ export default function Profile() {
                     <LinkedInIcon sx={{ fontSize: '2.5rem' }} />
                   </Button>
                 )}
-                {/* Calendly button */}
-                <Button
-                  component='a'
-                  href={calendlyUrl}
-                  variant='plain'
-                  color='neutral'
-                >
-                  <Typography sx={{ fontSize: '1.5rem' }}>Calendly</Typography>
-                </Button>
+                {/* Calendly button, if available */}
+                {profile?.profile?.calendar_link && (
+                  <Button
+                    component='a'
+                    href={profile?.profile?.calendar_link}
+                    variant='plain'
+                    color='neutral'
+                  >
+                    <Typography sx={{ fontSize: '1.5rem' }}>Calendly</Typography>
+                  </Button>
+                )}
               </Stack>
             </CardContent>
           </Card>

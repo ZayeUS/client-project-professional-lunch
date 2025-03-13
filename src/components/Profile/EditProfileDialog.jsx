@@ -57,13 +57,13 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    // Include the 'isActive' status in the profile update payload
+    // Include the 'isActive' status and calendar_link in the profile update payload
     const updatedProfile = {
       ...editProfile,
       isActive: !isDeactivated,  // Set the isActive value based on the checkbox state
     };
 
-    // Dispatch the action to update the profile, including the 'isActive' status
+    // Dispatch the action to update the profile, including the 'isActive' status and calendar_link
     dispatch({ type: 'EDIT_PROFILE', payload: updatedProfile });
 
     // Close the edit profile dialog
@@ -175,7 +175,7 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
 
     if (checked) {
       try {
-        await axios.post('http://localhost:5001/api/user/deactivate', payload); // Send user id for deactivation
+        await axios.post('https://client-project-professional-lunch.fly.dev/api/user/deactivate', payload); // Send user id for deactivation
         
       } catch (error) {
         console.error('Error deactivating account:', error);
@@ -183,7 +183,7 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
       }
     } else {
       try {
-        await axios.post('http://localhost:5001/api/user/activate', payload); // Send user id for activation
+        await axios.post('https://client-project-professional-lunch.fly.dev/api/user/activate', payload); // Send user id for activation
        
       } catch (error) {
         console.error('Error activating account:', error);
@@ -291,6 +291,27 @@ export default function EditProfileDialog({ open, closeEditProfile, profile }) {
                 profile: {
                   ...editProfile.profile,
                   linkedin: e.target.value,
+                },
+              })
+            }
+          />
+          <InputLabel>Calendar Link</InputLabel>
+          <TextField
+            sx={{ mb: 1 }}
+            placeholder="Calendar Link"
+            className="form-control"
+            type="text"
+            id="calendar_link"
+            fullWidth
+            size="small"
+            margin="dense"
+            value={editProfile?.profile?.calendar_link}
+            onChange={(e) =>
+              setEditProfile({
+                ...editProfile,
+                profile: {
+                  ...editProfile.profile,
+                  calendar_link: e.target.value,
                 },
               })
             }
