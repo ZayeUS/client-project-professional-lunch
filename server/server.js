@@ -1,14 +1,11 @@
 const cors = require('cors');
 const express = require('express');
-const path = require('path');
-require('dotenv').config();
-
 const app = express();
+require('dotenv').config();
 const PORT = process.env.PORT || 5001;
 
-// CORS Configuration
 const corsOptions = {
-  origin: ['http://localhost:5173', 'https://client-project-professional-lunch.fly.dev'], // Frontend URLs
+  origin: 'http://localhost:5173,https://client-project-professional-lunch.fly.dev/', // Frontend URL
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 };
@@ -30,18 +27,15 @@ const genderRouter = require('./routes/gender.router');
 const schoolsRouter = require('./routes/schools.router');
 const adminProfilesRouter = require('./routes/adminprofiles.router');
 const menteeSearchRouter = require('./routes/menteesearch.router');
-const profileAvailabilityRouter = require('./routes/profile.availability.router');
-const profileCheckRouter = require('./routes/profile.check.router');
-const zoomRouter = require('./routes/zoom.router');
-const pendingMentorsRouter = require('./routes/pendingmentors.router');
+const profileAvailabilityRouter = require("./routes/profile.availability.router");
+const profileCheckRouter = require("./routes/profile.check.router");
+const zoomRouter = require('./routes/zoom.router'); // Import the Zoom router
+const pendingmentors = require('./routes/pendingmentors.router')
 
 // Express Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-// Serve Static Files (Frontend)
-const frontendPath = path.join(__dirname, 'build');
-app.use(express.static(frontendPath));
+app.use(express.static('build'));
 
 // Passport Session Configuration
 app.use(sessionMiddleware);
@@ -50,7 +44,9 @@ app.use(sessionMiddleware);
 app.use(passport.initialize());
 app.use(passport.session());
 
-// API Routes
+// Routes
+
+
 app.use('/api/user', userRouter);
 app.use('/api/profile', profileRouter);
 app.use('/api/resources', resourcesRouter);
@@ -62,17 +58,19 @@ app.use('/api/genders', genderRouter);
 app.use('/api/schools', schoolsRouter);
 app.use('/api/adminprofiles', adminProfilesRouter);
 app.use('/api/menteesearch', menteeSearchRouter);
-app.use('/api/profileavailability', profileAvailabilityRouter);
-app.use('/api/check', profileCheckRouter);
-app.use('/api/zoom', zoomRouter);
-app.use('/api/pendingmentors', pendingMentorsRouter);
+app.use("/api/profileavailability", profileAvailabilityRouter);
+app.use("/api/check", profileCheckRouter);
+app.use("/api/zoom", zoomRouter);  // Register the Zoom router
+app.use("/api/pendingmentors",pendingmentors)
 
-// Serve Frontend for Any Non-API Routes
-app.get('*', (req, res) => {
-  res.sendFile(path.join(frontendPath, 'index.html'));
-});
-
-// Start Server
+// Listen Server & Port
 app.listen(PORT, () => {
   console.log(`Listening on port: ${PORT}`);
 });
+
+app.get('/', (req, res) => {
+  res.send('Server is running on Fly.io!');
+});
+
+
+// added in process.env.port
