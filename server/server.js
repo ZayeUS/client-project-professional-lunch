@@ -68,4 +68,9 @@ app.listen(PORT, () => {
   console.log(`Listening on port: ${PORT}`);
 });
 
+app.get('/', (req, res) => {
+  res.send('Server is running on Fly.io!');
+});
+
+
 // added in process.env.port

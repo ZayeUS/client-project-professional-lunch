@@ -24,4 +24,16 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.put('/:mentorId/approve', async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    await pool.query(`UPDATE "user" SET mentor_status = 'approved' WHERE id = $1`, [mentorId]);
+    res.status(200).json({ id: mentorId });
+  } catch (error) {
+    console.error("Error approving mentor:", error);
+    res.status(500).send("Internal server error");
+  }
+});
+
+
 module.exports = router;
