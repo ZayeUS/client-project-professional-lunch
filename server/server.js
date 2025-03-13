@@ -30,6 +30,7 @@ const menteeSearchRouter = require('./routes/menteesearch.router');
 const profileAvailabilityRouter = require("./routes/profile.availability.router");
 const profileCheckRouter = require("./routes/profile.check.router");
 const zoomRouter = require('./routes/zoom.router'); // Import the Zoom router
+const pendingmentors = require('./routes/pendingmentors.router')
 
 // Express Middleware
 app.use(express.json());
@@ -60,6 +61,7 @@ app.use('/api/menteesearch', menteeSearchRouter);
 app.use("/api/profileavailability", profileAvailabilityRouter);
 app.use("/api/check", profileCheckRouter);
 app.use("/api/zoom", zoomRouter);  // Register the Zoom router
+app.use("/api/pendingmentors",pendingmentors)
 
 // Listen Server & Port
 app.listen(PORT, () => {

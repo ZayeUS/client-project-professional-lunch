@@ -12,6 +12,7 @@ import menteeSearchSaga from './menteesearch.saga';
 import meetingsSaga from './meetings.saga';
 import profileCheckSaga from './profile.check.saga';
 import adminProfilesSaga from './adminProfiles.saga';
+import pendingMentorsSaga from './pendingmentors.saga';
 
 
 // rootSaga is the primary saga.
@@ -36,5 +37,7 @@ export default function* rootSaga() {
     profileCheckSaga(),
     adminProfilesSaga(),
     menteeSearchSaga(),
+    pendingMentorsSaga()
+    
   ]);
 }

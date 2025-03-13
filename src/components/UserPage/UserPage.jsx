@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import LogOutButton from '../LogOutButton/LogOutButton';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
@@ -13,9 +13,14 @@ import CardContent from '@mui/joy/CardContent';
 import CardOverflow from '@mui/joy/CardOverflow';
 import Stack from '@mui/joy/Stack';
 import Typography from '@mui/joy/Typography';
+import { Dialog, DialogContent, DialogTitle } from '@mui/material';
 
 function UserPage() {
   const dispatch = useDispatch();
+  const [openModal, setOpenModal] = useState(false); // State to control the modal
+  const history = useHistory();
+  const user = useSelector((store) => store.user);
+
   useEffect(() => {
     window.scrollTo(0, 0);
     const hasReloaded = localStorage.getItem('hasReloaded');
@@ -26,16 +31,18 @@ function UserPage() {
     } else {
       dispatch({ type: 'CHECK_FOR_PROFILE' });
     }
-  }, []);
 
-  const history = useHistory();
+    // Open modal if mentor status is pending
+    if (user?.isMentor && user?.mentor_status === 'pending') {
+      setOpenModal(true); // Show modal if status is pending
+    }
+  }, [user]); // Re-run when user data changes
 
   const createProfile = () => {
     console.log('button clicked');
     history.push('/registration/2');
   };
-  // this component doesn't do much to start, just renders some user reducer info to the DOM
-  const user = useSelector((store) => store.user);
+
   return (
     <Stack
       className='container'
@@ -89,28 +96,15 @@ function UserPage() {
         </CardOverflow>
       </Card>
 
-      {/* <h2>
-        Welcome to Professional Launch! Positively connecting the less
-        connected. Thank you for creating your account.
-      </h2>
-      <h3>
-        Please continue your Professional Launch journey by creating a profile.
-      </h3>
-      <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-        <Button
-          variant='outlined'
-          color='neutral'
-
-          onClick={() => createProfile()}
-        >
-          Create Profile
-        </Button>
-
-        <LogOutButton className='btn' />
-      </Box> */}
+      {/* Modal for waiting approval */}
+      <Dialog open={openModal}>
+        <DialogTitle>Approval Pending</DialogTitle>
+        <DialogContent>
+          <p>Your mentor account is under review. You'll be notified once approved.</p>
+        </DialogContent>
+      </Dialog>
     </Stack>
   );
 }
 
-// this allows us to use <App /> in index.js
 export default UserPage;

@@ -14,6 +14,8 @@ router.get("/", rejectUnauthenticated, (req, res) => {
   res.send(req.user);
 });
 
+
+
 // Handles POST request with new user data
 // The only thing different from this and every other post we've seen
 // is that the password gets encrypted before being inserted
@@ -239,5 +241,44 @@ router.post("/activate", async (req, res) => {
     res.sendStatus(500); // Internal server error
   }
 });
+
+
+// PUT route to update mentor status to 'approved' or other values
+router.put("/approve-mentor/:id", rejectUnauthenticated, async (req, res) => {
+  const userId = req.params.id; // Get the user ID from the route parameters
+  const status = req.body.status; // Get the status from the request body (approved)
+
+  if (!status) {
+    return res.status(400).send("Status is required.");
+  }
+
+  if (status !== "approved" && status !== "pending") {
+    return res.status(400).send("Invalid status. Use 'approved' or 'pending'.");
+  }
+
+  try {
+    const queryText = `
+      UPDATE "user"
+      SET mentor_status = $1
+      WHERE id = $2
+      RETURNING id, mentor_status;
+    `;
+    const result = await pool.query(queryText, [status, userId]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).send("User not found.");
+    }
+
+    res.status(200).send({
+      message: `Mentor status updated to '${status}'`,
+      user: result.rows[0],
+    });
+  } catch (error) {
+    console.error("Error in updating mentor status:", error);
+    res.sendStatus(500); // Internal server error
+  }
+});
+
+
 
 module.exports = router;
