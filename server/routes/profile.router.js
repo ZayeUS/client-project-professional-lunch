@@ -232,11 +232,11 @@ router.post("/", async (req, res) => {
 // PUT edit profile
 router.put("/", rejectUnauthenticated, async (req, res) => {
   try {
-    // Query to update profile details including isActive status
+    // Query to update profile details including isActive status & calendar_link
     const queryText = `UPDATE "profiles" 
                         SET "avatar"=$1, "bio"=$2, "linkedin"=$3, "email"=$4, "gender"=$5, 
-                            "school"=$6
-                        WHERE "profiles"."user_id"=$7;`;
+                            "school"=$6, "calendar_link"=$7
+                        WHERE "profiles"."user_id"=$8;`;
 
     await pool.query(queryText, [
       req.body.profile.avatar,
@@ -245,6 +245,7 @@ router.put("/", rejectUnauthenticated, async (req, res) => {
       req.body.profile.email,
       req.body.profile.gender,
       req.body.profile.school,
+      req.body.profile.calendar_link, // Calendly link added here
       req.user.id,
     ]);
 
@@ -260,7 +261,7 @@ router.put("/", rejectUnauthenticated, async (req, res) => {
 
     // Update the interests and availability
     const interests = req.body.details.interests;
-    await pool.query(`DELETE from profiles_interests WHERE profile_id=$1;`, [
+    await pool.query(`DELETE FROM profiles_interests WHERE profile_id=$1;`, [
       req.body.profile.id,
     ]);
     for (let interest of interests) {
@@ -299,6 +300,7 @@ router.put("/", rejectUnauthenticated, async (req, res) => {
     res.sendStatus(500); // Internal server error
   }
 });
+
 
 // DELETE profile *need to ON DELETE CASCADE mentorships
 router.delete("/", async (req, res) => {
