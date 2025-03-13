@@ -20,10 +20,10 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y build-essential node-gyp pkg-config python-is-python3
 
 # Copy dependency files first to leverage Docker's caching mechanism
-COPY package-lock.json package.json ./
+COPY package.json package-lock.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --only=production
 
 # Copy the application source code
 COPY . .
@@ -31,11 +31,12 @@ COPY . .
 # Final production image
 FROM base
 
-# Copy the built application from the build stage
+# Copy the built application and dependencies from the build stage
 COPY --from=build /app /app
+COPY --from=build /app/node_modules /app/node_modules
 
-# Expose the port the app listens on
+# Expose the correct port (8080)
 EXPOSE 8080
 
 # Start the application
-CMD [ "npm", "run", "start" ]
+CMD ["npm", "run", "start"]
